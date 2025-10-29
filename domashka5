@@ -1,0 +1,189 @@
+class Transport:
+    def __init__(self, id, current_speed=0, current_location="", battery_level=100):
+        self.id = id
+        self.current_speed = current_speed
+        self.current_location = current_location
+        self.battery_level = battery_level
+    
+    def move(self, new_location, new_speed):
+        required_charge = new_speed
+        if self.battery_level >= required_charge:
+            self.current_location = new_location
+            self.current_speed = new_speed
+            self.battery_level = max(0, self.battery_level - required_charge)
+        else:
+            print("Недостаточно заряда для поездки.")
+    
+    def charge(self, amount):
+        self.battery_level = min(100, self.battery_level + amount)
+    
+    def get_info(self):
+        return f"ID: {self.id}, Скорость: {self.current_speed} км/ч, Местоположение: {self.current_location}, Заряд: {self.battery_level}%"
+
+
+class ElectricScooter(Transport):
+    def __init__(self, id, current_speed=0, current_location="", battery_level=100, is_rented=False):
+        super().__init__(id, current_speed, current_location, battery_level)
+        self.is_rented = is_rented
+    
+    def move(self, new_location, new_speed):
+        if not self.is_rented:
+            print("Самокат не арендован.")
+            return
+        super().move(new_location, new_speed)
+
+
+class Drone(Transport):
+    def __init__(self, id, current_speed=0, current_location="", battery_level=100, altitude=0):
+        super().__init__(id, current_speed, current_location, battery_level)
+        self.altitude = altitude
+    
+    def take_off(self, height):
+        self.altitude += height
+    
+    def land(self):
+        self.altitude = 0
+    
+    def move(self, new_location, new_speed):
+        if self.altitude <= 0:
+            print("Дрон не может лететь - он на земле.")
+            return
+        required_charge = new_speed
+        if self.battery_level >= required_charge:
+            self.current_location = new_location
+            self.current_speed = new_speed
+            self.battery_level = max(0, self.battery_level - required_charge)
+            print(f"Дрон летит в {new_location} на высоте {self.altitude} м.")
+        else:
+            print("Недостаточно заряда для полета.")
+
+
+class GPSNavigator:
+    def calculate_route(self, from_location, to_location):
+        return f"Проложен маршрут из {from_location} в {to_location}."
+
+
+class EmergencyLanding:
+    def perform_emergency_landing(self):
+        if hasattr(self, 'altitude'):
+            self.altitude = 0
+        if hasattr(self, 'current_speed'):
+            self.current_speed = 0
+        if hasattr(self, 'battery_level'):
+            self.battery_level = 5
+        print("Аварийная посадка!")
+
+
+class DeliveryDrone(Drone, GPSNavigator, EmergencyLanding):
+    def __init__(self, id, current_speed=0, current_location="", battery_level=100, altitude=0):
+        super().__init__(id, current_speed, current_location, battery_level, altitude)
+        self.package = None
+    
+    def load_package(self, package_name):
+        self.package = package_name
+        print(f"Посылка '{package_name}' загружена.")
+    
+    def deliver_package(self):
+        if self.altitude == 0:
+            if self.package:
+                print(f"Посылка '{self.package}' доставлена!")
+                self.package = None
+            else:
+                print("Нет посылки для доставки.")
+        else:
+            print("Дрон должен быть на земле для доставки посылки.")
+    
+    def get_info(self):
+        base_info = super().get_info()
+        package_info = f", Посылка: {self.package if self.package else 'Нет'}"
+        return base_info + package_info
+
+print("=" * 50)
+print("ТЕСТИРОВАНИЕ БАЗОВОГО КЛАССА TRANSPORT")
+print("=" * 50)
+
+transport1 = Transport("T001", current_location="Гараж")
+print(transport1.get_info())
+transport1.move("Центр города", 30)
+print(transport1.get_info())
+transport1.charge(20)
+print("После зарядки:", transport1.get_info())
+
+print("\n" + "=" * 50)
+print("ТЕСТИРОВАНИЕ ELECTRIC SCOOTER")
+print("=" * 50)
+
+scooter = ElectricScooter("ES001", current_location="Станция А")
+print(scooter.get_info())
+
+scooter.move("Парк", 15)
+
+scooter.is_rented = True
+scooter.move("Парк", 15)
+print(scooter.get_info())
+
+scooter.charge(10)
+print("После зарядки:", scooter.get_info())
+
+print("\n" + "=" * 50)
+print("ТЕСТИРОВАНИЕ DRONE")
+print("=" * 50)
+
+drone = Drone("D001", current_location="База")
+print(drone.get_info())
+
+drone.move("Торговый центр", 20)
+
+drone.take_off(50)
+drone.move("Торговый центр", 20)
+print(drone.get_info())
+
+drone.land()
+print("После посадки:", drone.get_info())
+
+print("\n" + "=" * 50)
+print("ТЕСТИРОВАНИЕ DELIVERY DRONE")
+print("=" * 50)
+
+delivery_drone = DeliveryDrone("DD001", current_location="Склад")
+print(delivery_drone.get_info())
+
+route = delivery_drone.calculate_route("Склад", "Офис")
+print(route)
+
+delivery_drone.load_package("Важные документы")
+print(delivery_drone.get_info())
+
+delivery_drone.take_off(30)
+delivery_drone.deliver_package()
+
+delivery_drone.land()
+delivery_drone.deliver_package()
+print(delivery_drone.get_info())
+
+delivery_drone.take_off(40)
+delivery_drone.move("Парк", 25)
+print("Перед аварийной посадкой:", delivery_drone.get_info())
+delivery_drone.perform_emergency_landing()
+print("После аварийной посадки:", delivery_drone.get_info())
+
+print("\n" + "=" * 50)
+print("ТЕСТИРОВАНИЕ НЕДОСТАТОЧНОГО ЗАРЯДА")
+print("=" * 50)
+
+low_battery_scooter = ElectricScooter("ES002", battery_level=5, is_rented=True)
+print(low_battery_scooter.get_info())
+low_battery_scooter.move("Далекая точка", 10)  # Требуется 10% заряда, но есть только 5%
+
+print("\n" + "=" * 50)
+print("ТЕСТ ПОВТОРНОЙ ЗАГРУЗКИ ПОСЫЛКИ")
+print("=" * 50)
+
+delivery_drone2 = DeliveryDrone("DD002", current_location="Почта")
+delivery_drone2.load_package("Письмо")
+print(delivery_drone2.get_info())
+delivery_drone2.load_package("Книга") 
+print(delivery_drone2.get_info())
+delivery_drone2.land()
+delivery_drone2.deliver_package()
+print("После доставки:", delivery_drone2.get_info())
