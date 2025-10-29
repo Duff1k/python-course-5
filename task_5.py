@@ -20,9 +20,9 @@ class Transport:
         if self.battery_level > 100:
             self.battery_level = 100
     def get_info(self):
-        print (f"ID: {self.id},", 
-                f"Скорость: {self.current_speed},",
-                f"Местоположение: {self.current_location},", 
+        return (f"ID: {self.id}, "
+                f"Скорость: {self.current_speed}, "
+                f"Местоположение: {self.current_location}, "
                 f"Заряд: {self.battery_level}%")
     
 class ElectricScooter(Transport):
@@ -85,7 +85,7 @@ class DeliveryDrone(Drone, GPSNavigator, EmergencyLanding):
 
     def get_info(self):
         based_info = super().get_info()
-        print(f"{based_info}, Высота: {self.altitude}, Посылка: {self.package}")
+        return f"{based_info}, Высота: {self.altitude}, Посылка: {self.package}"
 
 if __name__ == "__main__":
     print("=== Транспорт ===")
