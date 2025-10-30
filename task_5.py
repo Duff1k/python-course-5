@@ -46,6 +46,7 @@ class Drone(Transport):
 
     def land(self):
         self.altitude = 0
+        self.current_speed = 0
 
     def move(self, new_location, speed):
         if self.altitude <= 0:
@@ -90,44 +91,41 @@ class DeliveryDrone(Drone, GPSNavigator, EmergencyLanding):
 if __name__ == "__main__":
     print("=== Транспорт ===")
     transport = Transport(id="T-1", current_location="Точка посадки")
-    print(transport.get_info())
+    print("Общая информация:", transport.get_info())
     transport.move("Центр", 10)
-    print(transport.get_info())
+    print("После move:", transport.get_info())
     transport.charge(15)
-    print(transport.get_info())
+    print("После зарядки:", transport.get_info())
     transport.move("Порт", 120)  # намеренно: заряда не хватит
-    print(transport.get_info())
 
     print("\n=== ELECTRIC SCOOTER ===")
     scooter = ElectricScooter(id="S-2", current_location="Парковка")
-    print(scooter.get_info())
+    print("Общая информация:", scooter.get_info())
     scooter.move("Парк", 5)  # не арендован
     scooter.is_rented = True
     scooter.move("Парк", 5)
-    print(scooter.get_info())
-    scooter.charge(-10)  # проверка обработки странной зарядки
-    print(scooter.get_info())
+    print("После аренды и поездки:", scooter.get_info())
 
     print("\n=== DRONE ===")
     drone = Drone(id="D-3", current_location="Склад-А")
-    print(drone.get_info())
+    print("Общая информация:", drone.get_info())
     drone.move("Точка-B", 15)  # высота 0 — не поедет
     drone.take_off(50)
     drone.move("Точка-B", 15)  # теперь полетит
-    print(drone.get_info())
+    print("После передвижения:", drone.get_info())
     drone.land()
-    print(drone.get_info())
+    print("После приземления", drone.get_info())
 
     print("\n=== DELIVERY DRONE ===")
     del_drone = DeliveryDrone(id="DD-4", current_location="Склад")
-    print(del_drone.get_info())
+    print("Общая информация:", del_drone.get_info())
     print(del_drone.calculate_route("Хаб", "Пункт-1"))
     del_drone.load_package("Документы")
     del_drone.take_off(20)
     del_drone.deliver_package()  # попытка в воздухе — должно предупредить
     del_drone.perform_emergency_landing()  # высота=0, скорость=0, батарея=5%
     del_drone.deliver_package()  # теперь на земле — доставит
-    print(del_drone.get_info())
+    print("После доставки:", del_drone.get_info())
     # Попробуем снова маршрут и перелёт с малым зарядом
     del_drone.charge(50)  # подзарядим до 55%
     del_drone.take_off(10)
